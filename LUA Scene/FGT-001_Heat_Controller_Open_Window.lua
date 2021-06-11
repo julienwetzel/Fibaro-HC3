@@ -1,3 +1,56 @@
+{
+  conditions = { {
+      id = 100,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 113,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 117,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 175,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 179,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 186,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 190,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    }, {
+      id = 194,
+      isTrigger = true,
+      operator = "anyValue",
+      property = "windowOpened",
+      type = "device"
+    } },
+  operator = "any"
+}
+
 --[[    L'activation de cette scène va rechercher dans quels vannes thermostatique FGT-001
         une fenêtre est détectée ouverte ou fermée et va ouvrir ou fermer toutes les vannes
         qui se trouvent dans la zone définie dans le panneau climat.
