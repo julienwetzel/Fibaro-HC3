@@ -32,18 +32,18 @@ for k,zone in pairs(climateZones) do
   end
 
   if zoneWindowOpened == true and CZWO_new[k] ~= CZWO_last[k] then
-    print("Fenêtre ouverte dans la zone "..zone.name..", fermeture des vannes: ")       
+    fibaro.debug("CLIMAT","Fenêtre ouverte dans la zone "..zone.name..", fermeture des vannes: ")       
 
     for _,id in pairs(devicesList) do
-      print("[ID:"..id.."] "..fibaro.getName(id))
+      fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id))
       api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Off"}})
     end
 
   elseif zoneWindowOpened == false and CZWO_new[k] ~= CZWO_last[k] then
-    print("Fenêtre fermée dans la zone "..zone.name..", ouverture des vannes: ")
+    fibaro.debug("CLIMAT","Fenêtre fermée dans la zone "..zone.name..", ouverture des vannes: ")
 
     for _,id in pairs(devicesList) do
-      print("[ID:"..id.."] "..fibaro.getName(id))
+      fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id))
       api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Heat"}})
     end
   end
