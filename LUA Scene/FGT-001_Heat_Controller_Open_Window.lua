@@ -1,6 +1,6 @@
 --[[    L'activation de cette scène va rechercher dans quels vannes thermostatique FGT-001
-        une fenêtre est détectée ouverte et va fermer toutes les vannes qui se trouvent dans
-        la zone définie dans le panneau climat.
+        une fenêtre est détectée ouverte ou fermée et va ouvrir ou fermer toutes les vannes
+        qui se trouvent dans la zone définie dans le panneau climat.
 
         Il est recommandé de désactiver cette scène lorsque votre profil "été" est activé.
         En effet, en été, les vannes sont configurés au max (ManufacturerSpecific) lorsque
