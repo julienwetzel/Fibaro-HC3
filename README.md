@@ -1,5 +1,4 @@
-# Informations sur les fichiers
-## LUA Scene
+# Informations
 ### Climat / Heating
 **FGT-001_Heat_Controller_Summer_mode.lua**
  - Désactive toutes les zones programmées
