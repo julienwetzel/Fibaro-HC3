@@ -22,6 +22,8 @@ for k,zone in pairs(climateZones) do
     api.put("/devices/"..id, {parameters = {{id = 2, value = 513, size = 4},{id = 3, value = 1, size = 4}}, useTemplate = true})
     api.post("/devices/"..id.."/action/setProtection", {args={"2"}})
     api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Heat"}})
-    fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode normal activé")
+    api.post("/devices/"..id.."/action/setHeatingThermostatSetpoint", {args = {zone.properties.currentTemperatureHeating}})
+    api.post("/devices/"..id.."/action/retryScheduleSynchronization", {args = {"1"}, delay = 0})
+    fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode normal activé | Température programmée: "..tostring(zone.properties.currentTemperatureHeating).."°C")
   end
 end
