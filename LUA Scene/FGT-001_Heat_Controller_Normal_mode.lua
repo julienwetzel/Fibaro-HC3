@@ -12,15 +12,16 @@ for k,zone in pairs(climateZones) do
   local devicesList = zone.properties.devices
 
   if zone.active == false then
-    api.put("/panels/climate/"..k, {active = {"true"}})
+    api.put("/panels/climate/"..k, {active = true})
     fibaro.debug("CLIMAT","Activation de la zone "..zone.name)
   end
 
-  for i,id in pairs(devicesList) do
-
-    if fibaro.getValue(id, "thermostatMode") ~= "Heat" then
-      api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Heat"}})
-      fibaro.debug("CLIMAT","Mode normal pour la vanne id: "..id)
-    end
+  for _,id in pairs(devicesList) do
+    api.put("/devices/"..api.get("/devices/"..id).parentId, {properties = {pollingInterval = -1}})
+    api.put("/devices/"..id, {properties = {saveLogs = true}, enabled = true, visible = true})
+    api.put("/devices/"..id, {parameters = {{id = 2, value = 513, size = 4},{id = 3, value = 1, size = 4}}, useTemplate = true})
+    api.post("/devices/"..id.."/action/setProtection", {args={"2"}})
+    api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Heat"}})
+    fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode normal activé")
   end
 end
