@@ -52,8 +52,8 @@
 }
 
 --[[    L'activation de cette scène va rechercher dans quels vannes thermostatique FGT-001
-        une fenêtre est détectée ouverte ou fermée et va ouvrir ou fermer toutes les vannes
-        qui se trouvent dans la zone définie dans le panneau climat.
+        une fenêtre est détectée ouverte et va fermer toutes les vannes qui se trouvent dans
+        la zone définie dans le panneau climat.
 
         Il est recommandé de désactiver cette scène lorsque votre profil "été" est activé.
         En effet, en été, les vannes sont configurés au max (ManufacturerSpecific) lorsque
@@ -84,20 +84,24 @@ for k,zone in pairs(climateZones) do
     end
   end
 
-  if zoneWindowOpened == true and CZWO_new[k] ~= CZWO_last[k] then
-    fibaro.debug("CLIMAT","Fenêtre ouverte dans la zone "..zone.name..", fermeture des vannes: ")       
+  if zoneWindowOpened == false and CZWO_new[k] ~= CZWO_last[k] then
+    fibaro.debug("CLIMAT","Fenêtre ouverte dans la zone "..zone.name)       
 
     for _,id in pairs(devicesList) do
       fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id))
       api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Off"}})
+      fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode fermé(Off)")
     end
 
   elseif zoneWindowOpened == false and CZWO_new[k] ~= CZWO_last[k] then
-    fibaro.debug("CLIMAT","Fenêtre fermée dans la zone "..zone.name..", ouverture des vannes: ")
+    fibaro.debug("CLIMAT","Fenêtre fermée dans la zone "..zone.name)
 
     for _,id in pairs(devicesList) do
       fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id))
       api.post("/devices/"..id.."/action/setThermostatMode", {args = {"Heat"}})
+      api.post("/devices/"..id.."/action/setHeatingThermostatSetpoint", {args = {zone.properties.currentTemperatureHeating}})
+      api.post("/devices/"..id.."/action/retryScheduleSynchronization", {args = {"1"}, delay = 0})
+      fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode normal | Température programmée: "..tostring(zone.properties.currentTemperatureHeating).."°C")
     end
   end
   fibaro.setGlobalVariable("climatZoneWindowOpen", json.encode(CZWO_new))
