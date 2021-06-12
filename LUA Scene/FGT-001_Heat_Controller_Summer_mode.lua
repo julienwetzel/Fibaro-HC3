@@ -18,11 +18,12 @@ for k,zone in pairs(climateZones) do
     fibaro.debug("CLIMAT","Désactivation de la zone "..zone.name)
   end
 
-  for i,id in pairs(devicesList) do
-
-    if fibaro.getValue(id, "thermostatMode") ~= "ManufacturerSpecific" then
-      api.post("/devices/"..id.."/action/setThermostatMode", {args = {"ManufacturerSpecific"}})
-      fibaro.debug("CLIMAT","Mode été pour la vanne id: "..id)
-    end
+  for _,id in pairs(devicesList) do
+    api.post("/devices/"..id.."/action/setThermostatMode", {args = {"ManufacturerSpecific"}})
+    api.put("/devices/"..id, {parameters = {{id = 2, value = 0, size = 4},{id = 3, value = 1, size = 4}}, useTemplate = true})
+    api.post("/devices/"..id.."/action/setProtection", {args={"2"}})
+    api.put("/devices/"..api.get("/devices/"..id).parentId, {properties = {pollingInterval = -1}})
+    api.put("/devices/"..id, {properties = {saveLogs = false}, enabled = false, visible = false})
+    fibaro.debug("CLIMAT","[ID:"..id.."] "..fibaro.getName(id).." | Mode été activé")
   end
 end
