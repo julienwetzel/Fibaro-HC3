@@ -19,3 +19,16 @@
    une fenêtre est détectée ouverte ou fermée et va ouvrir ou fermer toutes les vannes
    qui se trouvent dans la zone définie dans le panneau climat.
 
+## QuickApp
+### Windy Webcams
+   L'application permet d'ajouter les webcams dans un périmètre défini dans la vue des
+   caméras sur le HC3. Ajoute, supprime, active, désactive, masque ou affiche
+   automatiquement les caméras liées aux webcams.
+   
+   Il est possible d'ajouter plusieurs fois l'application et obtenir des webcams sur
+   plusieurs localisation.
+   
+   Définition des variables:
+   distance    :  distance en km à laquel les webcams vont être rechercher
+   apiKey      :  Définir ici votre APIKey
+   locationId  :  Définir ici l'ID de la localisation HC3 ()
