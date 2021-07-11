@@ -171,13 +171,20 @@ end
 
 -- Get HC3 longitude and latitude
 function QuickApp:getHCLocation(val)
-	local location = api.get("/panels/location/" .. val)
-	if location then 
-		self:trace("Configured location:", location.name)
+	local location,c = api.get("/panels/location/" .. val)
+	if c == 200 then 
+		self:trace("Configured name location:", location.name)
 		location = {lat = location.latitude, lon = location.longitude}
 		return location
 	else 
-		return self:error("Location with provided id (", val ,") doesn't exist")
+		location,c = api.get("/settings/location")
+		if c == 200 then
+			self:trace("City HC3 location:", location.city)
+			location = {lat = location.latitude, lon = location.longitude}
+			return location
+		else
+			return self:error("Location with provided id (", val ,") doesn't exist")
+		end
 	end
 end
 
@@ -185,10 +192,10 @@ function QuickApp:isEmpty(s) return s == nil or s == '' end
 
 -- Return true or false if device exist
 function QuickApp:ifDeviceExist(id)
-	local r,c
 	if self:isEmpty(id) then 
 		return false
-	else r,c = api.get("/devices/" .. id)
+	else 
+		local r,c = api.get("/devices/" .. id)
 		if c == 200 then return true
 		else 
 			return false 
