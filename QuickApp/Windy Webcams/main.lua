@@ -5,9 +5,10 @@ Windy Webcam
 
 -- Initialisation
 function QuickApp:onInit()
-	self.config = Config:new(self)
-	self.auth   = Auth:new(self.config)
-	self.http   = HTTPClient:new()
+	self.config  = Config:new(self)
+	self.auth    = Auth:new(self.config)
+	self.http    = HTTPClient:new()
+	self.install = Installation:new()
 	self:trace('')
 	self:trace('Windy Webcams')
 	self:run()
@@ -15,9 +16,11 @@ end
 
 -- run interval
 function QuickApp:run()
-	self:pullWindyData()
+	self:installation(function() self:pullWindyData() end)
 	local interval = self.config:getTimeoutInterval()
-	if (interval > 0) then fibaro.setTimeout(interval, function() self:run() end) end
+	if self:isEmpty(interval) then fibaro.setTimeout(1000*60*1, function() self:run() end)
+	else fibaro.setTimeout(interval, function() self:run() end)
+	end
 end
 
 -- Main function
@@ -29,14 +32,7 @@ function QuickApp:pullWindyData()
 	-- callback function
 	local callback = function(response)
 		local data = json.decode(response.data)
-		local res = data.result --dataTest or data.result
-
-		--print(self:jdump(json.encode(res)))
-		-- return error if return error message
-		if data.error and data.error.message then 
-			self:error(data.error.message)
-			return false 
-		end
+		local res = data.result
 
 		-- If data are OK
 		if data.status == "OK" then
@@ -59,7 +55,6 @@ function QuickApp:pullWindyData()
 
 				-- If webcam not exist
 				if webcam == nil then webcam = {name = "", status = "", city = "", img = "", deviceId = "", inList = true} end
-				--print(self:jdump(json.encode(webcam)))
 
 				-- True or false if device is in the HC3
 				webcamExist = self:ifDeviceExist( webcam.deviceId )
@@ -111,11 +106,9 @@ function QuickApp:pullWindyData()
 					webcamConfig.enabled = true
 					webcamConfig.visible = true 
 				end
-				--print(self:jdump(json.encode(webcamConfig)))
-				--print(self:jdump(json.encode(webcam)))
 
 				-- Add or update camera device 
-				if not(webcamExist) --[[webcam.new or self:ifDeviceExist( webcam.deviceId ) == false ]]then
+				if not(webcamExist) then
 					r,c = api.post("/devices", webcamConfig)
 					if c ~= 200 then self:error("Camera \"" .. webcam.name .. "\" not created, error: " .. c .. " " .. r.message)
 					else webcam.deviceId = r.id 
@@ -134,11 +127,7 @@ function QuickApp:pullWindyData()
 
 				webcam.inList = true
 				storedData.webcams[v.id] = webcam
-				--print(self:jdump(json.encode(webcam)))
 			end
-
-			--print(self:jdump(json.encode(storedData))) 
-			--self.config:setStoredData(storedData) 
 
 			-- Delete camera device
 			if storedData.webcams ~= nil then
@@ -157,16 +146,75 @@ function QuickApp:pullWindyData()
 				end
 			end
 
-			--print(self:jdump(json.encode(storedData)))
 			self.config:setStoredData(storedData) 
 		else 
 			return self:error("Webcam acquisition error")
 		end
 	end
 
-	--print(self.auth:getHeaders())
 	self.http:get(url, callback, nil, self.auth:getHeaders({}))
 	return {}
+end
+
+function QuickApp:installation(nextFunction)
+	local v = self:getVarInfo()
+	local code = 0
+	if self.config:getApiKey()  == "0" then code = 300
+	else
+		local url = "https://api.windy.com/api/webcams/v2/list/limit=1?show=webcams:location"
+		local callback = function(response)
+			if response.status == "OK" then code = 200
+			elseif type(response.status) == "number" then code = response.status
+			else code = 304
+			end
+			v.apiKey.code = code
+			self.install:run(v,function() nextFunction() end)
+		end
+
+		self.http:get(url, callback, nil, self.auth:getHeaders({}))
+		return {}
+	end
+	v.apiKey.code = code
+	self.install:run(v,function() nextFunction() end)
+end
+
+function QuickApp:getVarInfo()
+	local varInfo = {
+		distance = {code = self.config:getDistance(), unit = "km", example = "5", txt = ""}, 
+		apiKey = {code = nil, unit = "", example = "MNgwCHC87gplxaH2z4VBeCUyvChDyXyS", txt = ""},
+		locationId = {code = self.config:getLocationId(), unit = "", example = "219", txt = ""},
+		refreshInterval = {code = self.config:getTimeoutInterval(), unit = "min", example = "5", txt = ""},
+		maxWebcam = {code = self.config:getLimit(), unit = "", example = "50", txt = ""},
+	}
+	local c,r = 0
+	r,c = self.config:getDistance()
+	varInfo.distance.code = c
+	r,c = self.config:getLocationId()
+	varInfo.locationId.code = c
+	r,c = self.config:getTimeoutInterval()
+	varInfo.refreshInterval.code = c
+	r,c = self.config:getLimit()
+	varInfo.maxWebcam.code = c
+
+	varInfo.distance.txt = "This is the search radius from the location."
+
+	varInfo.apiKey.txt = "[Step 1] Create a login to <a target='_blank' href='https://community.windy.com/login'>https://community.windy.com/login</a>"
+	varInfo.apiKey.txt = varInfo.apiKey.txt .. "<br>[Step 2] Go to <a target='_blank' href='https://api.windy.com/keys'>https://api.windy.com/keys</a>"
+	varInfo.apiKey.txt = varInfo.apiKey.txt .. "<br>[Step 3] Click on button \"Create a new API Key\""
+	varInfo.apiKey.txt = varInfo.apiKey.txt .. "<br>[Step 4] Fill the <b>Project identification</b> field (Example : \"Fibaro\")"
+	varInfo.apiKey.txt = varInfo.apiKey.txt .. "<br>[Step 5] Choose <b>Webcams API</b> option in API Service and click Create"
+	varInfo.apiKey.txt = varInfo.apiKey.txt .. "<br>[Step 6] Copy/past your ApiKey in the apiKey variable"
+
+	varInfo.locationId.txt = "Choose your ID location and set the variable \"locationId\"<br>" .. self:tableLocation()
+
+	varInfo.refreshInterval.txt = "This is the refresh rate in minutes."
+	varInfo.refreshInterval.txt = varInfo.refreshInterval.txt .. "<br>- Please note that webcams are generally updated every 15 minutes."
+
+	varInfo.maxWebcam.txt = "This is the limit of the maximum number of webcams that are retrieved."
+	varInfo.maxWebcam.txt = varInfo.maxWebcam.txt .. "<br>It is possible to install the program several times to obtain webcams from several locations."
+	varInfo.maxWebcam.txt = varInfo.maxWebcam.txt .. "<br>- Please note that it is not possible to get more than 50 webcams."
+
+	return varInfo
 end
 
 -- Get HC3 longitude and latitude
@@ -176,29 +224,29 @@ function QuickApp:getHCLocation(val)
 		self:trace("Configured name location:", location.name)
 		location = {lat = location.latitude, lon = location.longitude}
 		return location
-	else 
-		location,c = api.get("/settings/location")
-		if c == 200 then
-			self:trace("City HC3 location:", location.city)
-			location = {lat = location.latitude, lon = location.longitude}
-			return location
-		else
-			return self:error("Location with provided id (", val ,") doesn't exist")
-		end
+	else return self:error("Error to get Location")
 	end
 end
 
-function QuickApp:isEmpty(s) return s == nil or s == '' end
+function QuickApp:isEmpty(s) return s == nil or s == "" end
 
 -- Return true or false if device exist
 function QuickApp:ifDeviceExist(id)
 	if self:isEmpty(id) then 
 		return false
 	else 
-		local r,c = api.get("/devices/" .. id)
+		local _,c = api.get("/devices/" .. id)
 		if c == 200 then return true
 		else 
 			return false 
 		end
 	end
+end
+
+-- Return list of location in HC3 in format web table
+function QuickApp:tableLocation()
+	local list,_ = api.get("/panels/location")
+	local t = "<tr><td>Location name</td><td>ID</td></tr>"
+	for _,v in pairs(list) do t = t .. "<tr><td>" .. v.name .. "</td><td>" .. v.id .. "</td></tr>" end
+	return table(t,"bgcolor='#203737' border='1' width=150px")
 end
