@@ -10,14 +10,48 @@ function Config:new(app)
 	return self
 end
 
-function Config:getApiKey() return self.apiKey end
-function Config:getDistance() return self.distance end
-function Config:getLocationId() return self.locationId end
+function Config:getApiKey()
+	return self.apiKey
+end
+
+function Config:getDistance()
+	local n = tonumber(self.distance )
+	if n == 0 then return nil, 300
+	elseif n == nil then return nil, 303
+	else return n, 200
+	end
+end
+
+function Config:getLocationId()
+	local n = tonumber(self.locationId)
+	local _,c = api.get("/panels/location/" .. n)
+	if n == 0 then return nil, 300
+	elseif n == nil then return nil, 303
+	elseif c == 200 then return n, 200
+	else return nil, 404
+	end
+end
+
+function Config:getLimit() 
+	local n = tonumber(self.limit)
+	if n == 0 then return nil, 300 
+	elseif n == nil then return nil, 303
+	elseif n < 0 or n > 50 then return nil, 303
+	else return n, 200
+	end
+end
+
+function Config:getTimeoutInterval()
+	local n = tonumber(self.interval)
+	if n  == 0 then return nil, 300
+	elseif n == nil then return nil, 303
+	else return n * 60000, 200 
+	end
+end
+
 function Config:getStoredData() return self.storedData end
 function Config:setStoredData(v) self.app:setVariable('storedData', json.encode(v)) end
-function Config:getTimeoutInterval() return tonumber(self.interval) * 60000 end
 function Config:getDeviceTemplate() return self.deviceTemplate end
-function Config:getLimit() return self.limit end
 
 function Config:init()
 	self.locationId = self.app:getVariable('locationId')
@@ -43,11 +77,11 @@ function Config:init()
 	local storedInterval = Globals:get('windy_webcams_interval')
 
 	-- handling apiKey
-	if string.len(self.apiKey) < 4 and string.len(storedApiKey) > 3 then
+	if QuickApp:isEmpty(self:getApiKey(self.apiKey)) and not(QuickApp:isEmpty(self:getApiKey(storedApiKey))) then
 		self.app:setVariable("apiKey", storedApiKey)
 		self.apiKey = storedApiKey
-	elseif (storedApiKey == nil and self.apiKey) or storedApiKey ~= self.apiKey then
-		Globals:set('windy_webcams_apikey', self.apiKey)
+	elseif not(QuickApp:isEmpty(self:getApiKey(self.apiKey))) then
+		Globals:set('windy_webcams_apikey', self.apiKey) 
 	end
 
 	-- handling interval
