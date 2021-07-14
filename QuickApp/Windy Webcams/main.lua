@@ -1,5 +1,5 @@
 --[[ 
-Windy Webcam
+Windy Webcams
 @author jwetzel 
 ]]
 
