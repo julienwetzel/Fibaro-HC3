@@ -1,4 +1,4 @@
-function QuickApp:printTable( t )
+function printTable( t )
 	local printTable_cache = {}
 	local function sub_printTable( t, indent )
 
@@ -41,7 +41,7 @@ By Per Jarnehamamr, 2019
 
 --]]
 
-function QuickApp:jdump(jstr, indent) 
+function jdump(jstr, indent) 
 	if not indent then indent = 2 end
 
 	local str = "<pre><font color=yellowgreen><br>";
