@@ -180,11 +180,11 @@ end
 
 function QuickApp:getVarInfo()
 	local varInfo = {
-		distance = {code = self.config:getDistance(), unit = "km", example = "5", txt = ""}, 
+		distance = {code = nil, unit = "km", example = "5", txt = ""}, 
 		apiKey = {code = nil, unit = "", example = "MNgwCHC87gplxaH2z4VBeCUyvChDyXyS", txt = ""},
-		locationId = {code = self.config:getLocationId(), unit = "", example = "219", txt = ""},
-		refreshInterval = {code = self.config:getTimeoutInterval(), unit = "min", example = "5", txt = ""},
-		maxWebcam = {code = self.config:getLimit(), unit = "", example = "50", txt = ""},
+		locationId = {code = nil, unit = "", example = "219", txt = ""},
+		refreshInterval = {code = nil, unit = "min", example = "5", txt = ""},
+		maxWebcam = {code = nil, unit = "", example = "50", txt = ""},
 	}
 	local c,r = 0
 	r,c = self.config:getDistance()
