@@ -1,5 +1,5 @@
 --[[
-Configuration handler
+Configuration handler 
 @author jwetzel
 ]]
 class 'Config'
@@ -77,11 +77,10 @@ function Config:init()
 	local storedInterval = Globals:get('windy_webcams_interval')
 
 	-- handling apiKey
-	if QuickApp:isEmpty(self:getApiKey(self.apiKey)) and not(QuickApp:isEmpty(self:getApiKey(storedApiKey))) then
+	if (QuickApp:isEmpty(self:getApiKey(self.apiKey)) or self:getApiKey(self.apiKey) == "0")
+    and not(QuickApp:isEmpty(self:getApiKey(storedApiKey))) then
 		self.app:setVariable("apiKey", storedApiKey)
 		self.apiKey = storedApiKey
-	elseif not(QuickApp:isEmpty(self:getApiKey(self.apiKey))) then
-		Globals:set('windy_webcams_apikey', self.apiKey) 
 	end
 
 	-- handling interval
