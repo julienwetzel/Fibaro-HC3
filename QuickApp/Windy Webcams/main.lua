@@ -49,17 +49,17 @@ function QuickApp:pullWindyData()
 			local webcam = {}
 			local webcamConfig = self.config:getDeviceTemplate()
 			local webcamExist = true
-			local n,r,c
+			local n,r,c,camInfo
 
 			-- Webcam device creation
 			for _,v in pairs(res.webcams) do
 				webcam = storedData.webcams[v.id]
 
 				-- If webcam not exist
-				if webcam == nil then webcam = {name = "", status = "", city = "", img = "", deviceId = "", inList = true} end
+				if webcam == nil then webcam = {status = "", city = "", img = "", deviceId = "", inList = true} end
 
 				-- True or false if device is in the HC3
-				webcamExist = self:ifDeviceExist( webcam.deviceId )
+				webcamExist, camInfo = self:ifDeviceExist( webcam.deviceId )
 
 				-- Webcam inList on the request Windy server
 				webcam.inList = true
@@ -78,8 +78,9 @@ function QuickApp:pullWindyData()
 				end
 
 				-- Webcam name process
-				if webcam.name == "" then webcam.name = "wy " .. webcam.city
+				if (webcam.name == "" or self:isEmpty(webcam.name)) then webcam.name = "wy " .. webcam.city
 					if string.len(webcam.name) > 20 then webcam.name = string.sub(webcam.name,1,20) end
+					webcamConfig.name = webcam.name
 				end
 
 				-- Link img process
@@ -97,7 +98,6 @@ function QuickApp:pullWindyData()
 					end
 				end
 
-				webcamConfig.name = webcam.name
 				webcamConfig.properties.jpgPath = webcam.img
 
 				-- Webcam visible and enabled
@@ -118,8 +118,8 @@ function QuickApp:pullWindyData()
 					end
 				else 
 					r,c = api.put("/devices/" .. webcam.deviceId, webcamConfig)
-					if c ~= 200 then self:error("Camera \"" .. webcam.name .. "\" not updated, error: " .. c .. " " .. r.message) 
-					else self:trace("Webcam[id:" .. r.id .. "] \"" .. webcam.name .. "\" updated") end
+					if c ~= 200 then self:error("Camera \"" .. camInfo.name .. "\" not updated, error: " .. c .. " " .. r.message) 
+					else self:trace("Webcam[id:" .. r.id .. "] \"" .. camInfo.name .. "\" updated") end
 				end
 
 				-- Var deviceId verification
@@ -238,10 +238,10 @@ function QuickApp:ifDeviceExist(id)
 	if self:isEmpty(id) then 
 		return false
 	else 
-		local _,c = api.get("/devices/" .. id)
-		if c == 200 then return true
+		local r,c = api.get("/devices/" .. id)
+		if c == 200 then return true, r
 		else 
-			return false 
+			return false, nil
 		end
 	end
 end
