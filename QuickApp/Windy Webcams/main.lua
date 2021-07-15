@@ -38,11 +38,13 @@ function QuickApp:pullWindyData()
 		if data.status == "OK" then
 			self:trace("Webcam found : " .. tostring(res.total))
 			self:trace("Webcam safe limitation : " .. tostring(res.limit)) 
-
-			local storedData = self.config:getStoredData()
+            local storedData = self.config:getStoredData()
 
 			-- Initialize storedData if empty
-			if self:isEmpty(storedData.webcams) then storedData["webcams"] = {} end
+			if self:isEmpty(storedData.webcams) then 
+                self:setVariable("storedData",{})
+                storedData["webcams"] = {} 
+            end
 
 			local webcam = {}
 			local webcamConfig = self.config:getDeviceTemplate()
