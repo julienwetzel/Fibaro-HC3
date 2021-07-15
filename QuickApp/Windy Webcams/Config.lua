@@ -50,12 +50,12 @@ function Config:getTimeoutInterval()
 end
 
 function Config:getStoredData() return self.storedData end
-function Config:setStoredData(v) self.app:setVariable('storedData', json.encode(v)) end
+function Config:setStoredData(v) self.app:setVariable('storedData', v) end
 function Config:getDeviceTemplate() return self.deviceTemplate end
 
 function Config:init()
 	self.locationId = self.app:getVariable('locationId')
-	self.storedData = json.decode(self.app:getVariable('storedData'))
+	self.storedData = self.app:getVariable('storedData')
 	self.apiKey     = self.app:getVariable('apiKey') 
 	self.distance   = self.app:getVariable('distance')
 	self.interval   = self.app:getVariable('refreshInterval')
