@@ -61,7 +61,6 @@ function Config:init()
 	self.interval   = self.app:getVariable('refreshInterval')
 	self.limit      = self.app:getVariable('maxWebcam')
 	self.deviceTemplate = {
-		name = "string",
 		type = "com.fibaro.ipCamera",
 		baseType = "com.fibaro.camera",
 		enabled = true,
@@ -72,13 +71,13 @@ function Config:init()
 			jpgPath = "path",
 			refreshTime = 3600
 		}}
-
+    
 	local storedApiKey = Globals:get('windy_webcams_apikey')
 	local storedInterval = Globals:get('windy_webcams_interval')
 
 	-- handling apiKey
 	if (QuickApp:isEmpty(self.apiKey) or self.apiKey == "0")
-	and not(QuickApp:isEmpty(storedApiKey)) then
+    and not(QuickApp:isEmpty(storedApiKey)) then
 		self.app:setVariable("apiKey", storedApiKey) 
 		self.apiKey = storedApiKey
 	end
