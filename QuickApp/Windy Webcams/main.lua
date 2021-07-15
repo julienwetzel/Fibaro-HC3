@@ -161,11 +161,15 @@ end
 function QuickApp:installation(nextFunction)
 	local v = self:getVarInfo()
 	local code = 0
-	if self.config:getApiKey()  == "0" then code = 300
+    local ak = self.config:getApiKey()
+	if ak  == "0" then code = 300
 	else
 		local url = "https://api.windy.com/api/webcams/v2/list/limit=1?show=webcams:location"
 		local callback = function(response)
-			if response.status == "OK" then code = 200
+            print(response.status) 
+			if response.status == "200" then 
+                code = 200
+                Globals:set('windy_webcams_apikey', ak) 
 			elseif type(response.status) == "number" then code = response.status
 			else code = 304
 			end
@@ -176,6 +180,7 @@ function QuickApp:installation(nextFunction)
 		self.http:get(url, callback, nil, self.auth:getHeaders({}))
 		return {}
 	end
+
 	v.apiKey.code = code
 	self.install:run(v,function() nextFunction() end)
 end
