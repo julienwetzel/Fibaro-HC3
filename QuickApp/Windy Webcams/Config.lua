@@ -77,9 +77,9 @@ function Config:init()
 	local storedInterval = Globals:get('windy_webcams_interval')
 
 	-- handling apiKey
-	if (QuickApp:isEmpty(self:getApiKey(self.apiKey)) or self:getApiKey(self.apiKey) == "0")
-    and not(QuickApp:isEmpty(self:getApiKey(storedApiKey))) then
-		self.app:setVariable("apiKey", storedApiKey)
+	if (QuickApp:isEmpty(self.apiKey) or self.apiKey == "0")
+	and not(QuickApp:isEmpty(storedApiKey)) then
+		self.app:setVariable("apiKey", storedApiKey) 
 		self.apiKey = storedApiKey
 	end
 
