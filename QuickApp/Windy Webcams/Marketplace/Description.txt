@@ -1,0 +1,7 @@
+QuickApp module to integrate of Windy webcams in camera device.
+Windy brings together a large number of webcams around the world. You will find here all available webcams. All you have to do is install the QuickApp and you will have all the webcams on your HC3 near your house or the locations defined in your HC3.
+To use it you need to import attached .fqa file into HC3 and open the console for setup instructions.
+
+Changelog:
+v1.0 - 07/2021
+•	Initial release
