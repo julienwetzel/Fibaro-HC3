@@ -38,13 +38,13 @@ function QuickApp:pullWindyData()
 		if data.status == "OK" then
 			self:trace("Webcam found : " .. tostring(res.total))
 			self:trace("Webcam safe limitation : " .. tostring(res.limit)) 
-            local storedData = self.config:getStoredData()
+			local storedData = self.config:getStoredData()
 
 			-- Initialize storedData if empty
 			if self:isEmpty(storedData.webcams) then 
-                self:setVariable("storedData",{})
-                storedData["webcams"] = {} 
-            end
+				self:setVariable("storedData",{})
+				storedData["webcams"] = {} 
+			end
 
 			local webcam = {}
 			local webcamConfig = self.config:getDeviceTemplate()
@@ -161,19 +161,15 @@ end
 function QuickApp:installation(nextFunction)
 	local v = self:getVarInfo()
 	local code = 0
-    local ak = self.config:getApiKey()
+	local ak = self.config:getApiKey()
 	if ak  == "0" then code = 300
 	else
 		local url = "https://api.windy.com/api/webcams/v2/list/limit=1?show=webcams:location"
 		local callback = function(response)
-            print(response.status) 
-			if response.status == "200" then 
-                code = 200
-                Globals:set('windy_webcams_apikey', ak) 
-			elseif type(response.status) == "number" then code = response.status
-			else code = 304
+			if response.status == 200 then 
+				Globals:set('windy_webcams_apikey', ak) 
 			end
-			v.apiKey.code = code
+			v.apiKey.code = response.status
 			self.install:run(v,function() nextFunction() end)
 		end
 
