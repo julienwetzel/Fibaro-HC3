@@ -1,3 +1,6 @@
+Merci pour votre soutient
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=RBVHN4TFLVHDA&no_recurring=0&currency_code=CHF)
 # Informations
 ## LUA Scene
 ### Climat / Heating
