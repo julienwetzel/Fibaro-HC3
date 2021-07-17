@@ -21,14 +21,6 @@
 
 ## QuickApp
 ### Windy Webcams
-   L'application permet d'ajouter les webcams dans un périmètre défini dans la vue des
-   caméras sur le HC3. Ajoute, supprime, active, désactive, masque ou affiche
-   automatiquement les caméras liées aux webcams.
-   
-   Il est possible d'ajouter plusieurs fois l'application et obtenir des webcams sur
-   plusieurs localisation.
-   
-   Définition des variables:
-   distance    :  distance en km à laquel les webcams vont être rechercher
-   apiKey      :  Définir ici votre APIKey
-   locationId  :  Définir ici l'ID de la localisation HC3 ()
+Ce module QuickApp intègre les webcams proches dans les caméras du HC3
+Le site web Windy regroupe un grand nombre de webcams à travers le monde. Vous trouverez ici toutes les webcams disponibles. Tout ce que vous avez à faire est d'installer la QuickApp et vous aurez toutes les webcams sur votre HC3 à proximité de votre maison ou des emplacements définis dans votre HC3.
+Pour l'utiliser, vous devez importer le fichier .fqa joint dans HC3 et ouvrir la console pour les instructions de configuration.
