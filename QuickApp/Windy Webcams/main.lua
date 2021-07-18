@@ -147,14 +147,11 @@ function QuickApp:pullWindyData()
 				for a,j in pairs(storedData.webcams) do 
 					if j.inList == false then 
 						r,c = api.delete("/devices/" .. j.deviceId)
-						if c ~= 200 then 
-							self:error("Camera \"" .. j.name .. "\" not deleted, error: " .. c .. " " .. r.message)
-						else 
-							self:trace("Webcam[id:" .. j.deviceId .. "] \"" .. j.name .. "\" removed ") 
-							storedData.webcams[a] = nil 
+						if c ~= 200 then self:trace("Camera \"" .. j.name .. "\" not deleted, error: " .. tostring(c))
+						else self:trace("Webcam[id:" .. j.deviceId .. "] \"" .. j.name .. "\" removed ") 
 						end
-					else 
-						storedData.webcams[a].inList = false 
+						storedData.webcams[a] = nil 
+					else storedData.webcams[a].inList = false 
 					end
 				end
 			end
