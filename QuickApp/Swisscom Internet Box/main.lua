@@ -14,7 +14,7 @@
    limitations under the License.
 ]]
 
-function QuickApp:onInit()   
+function QuickApp:onInit()
     self.app = self
 	self.config = Config:new(self)
 	self.auth = Auth:new(self.config)
