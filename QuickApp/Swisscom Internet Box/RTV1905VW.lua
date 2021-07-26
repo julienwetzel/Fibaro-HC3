@@ -89,10 +89,7 @@ function RTV1905VW:setDynDNS()
 		local body = {
                         service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
                         method = "Configure",
-                        parameters = {
-                            enable = boolean,
-                            name = "1786"
-                        }
+                        parameters = {enable = boolean}
                         }
 
 		local callback = function(r)
@@ -236,7 +233,7 @@ function RTV1905VW:setWifi()
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:getHeaders(headers)
-	cmd("RTV1905VW:getHeaders()")
+	--cmd("RTV1905VW:getHeaders()")
 	local contextID = Auth:getContextID()
     local cookies = Auth:getCookie()
 
