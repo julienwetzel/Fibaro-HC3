@@ -15,102 +15,61 @@
 ]]
 
 function QuickApp:onInit()
-    self.app = self
+    self.boolean = ""
+    self.boxInfo = {}
 	self.config = Config:new(self)
-	self.auth = Auth:new(self.config)
-    self.swisscom = Swisscom:new(self.util)
-	self:run()
+    self.model = self.config:getModel()
+	self.auth = Auth:new(self)
+    --self.swisscom = Swisscom:new(self)
+	--self.RTV1905VW = RTV1905VW:new(self)
 end
 
-function QuickApp:run()
-
+function QuickApp:actionButtonPressed(param)
+    self:updateView("refresh_true", "text", "LOADING...")
+    local command = param.elementName
+    local btn,cmd = {},{}
+    for w in command:gmatch("%w+") do table.insert(btn, w) end
+    cmd.method = btn[1]
+    cmd.command = btn[2]
+    self.auth:login(cmd)
 end
-
-function QuickApp:startWifi()
-    cmd("QuickApp:startWifi()")
-	self.swisscom:setWifi(true)
-end
-
-function QuickApp:stopWifi()
-    cmd("QuickApp:stopWifi()")
-	self.swisscom:setWifi(false) 
-end
-
-function QuickApp:refresh()
-    cmd("QuickApp:refresh()")
-	self.swisscom:updateInfo()
-end
-
-function QuickApp:startWifiGuest()
-    cmd("QuickApp:startWifiGuest()")
-	self.swisscom:setGuestWifi(true)
-end
-
-function QuickApp:stopWifiGuest()
-    cmd("QuickApp:stopWifiGuest()")
-	self.swisscom:setGuestWifi(false)
-end
-
-function QuickApp:startCentralStorage()
-    cmd("QuickApp:startCentralStorage()")
-	self.swisscom:setCentralStorage(true)
-end
-
-function QuickApp:stopCentralStorage()
-    cmd("QuickApp:stopCentralStorage()")
-	self.swisscom:setCentralStorage(false)
-end
-
-function QuickApp:startHomeApp()
-    cmd("QuickApp:startHomeApp()")
-	self.swisscom:setHomeApp(true)
-end
-
-function QuickApp:stopHomeApp()
-    cmd("QuickApp:stopHomeApp()")
-	self.swisscom:setHomeApp(false)
-end
-
-function QuickApp:startDynDNS()
-    cmd("QuickApp:startDynDNS()")
-	self.swisscom:setDynDNS(true)
-end
-
-function QuickApp:stopDynDNS()
-    cmd("QuickApp:stopDynDNS()")
-	self.swisscom:setDynDNS(false)
-end
---[[function QuickApp:actionButtonPressed(param)
-  local command = param.elementName 
-  command = string.gsub(command, "Button", "") --cut part of buttonID which is a command to mower
-  local TimeCommand = tonumber( command, 10) 
-  self:setVariable("commandAction", command)
-
-  if command == "Park" or command == "Start" then
-    self:setVariable( "commandDuration", self.duration )
-    self:login()
-  elseif TimeCommand ~= nil then    
-    self.duration = TimeCommand * 60
-    self:updateView( "durationSlider", "value", tostring( math.floor(( TimeCommand * 60 ) * ( 100 / 1440 ))))
-    self:updateView( "durationLabel", "text", "Commandes horaires (durée): [hh:mm] " ..TimeCommand.."h")
-  else
-    self:setVariable( "commandDuration", 0 ) 
-    self:login()
-  end
-end]]
 
 function QuickApp:displayInfo()
-	cmd("displayInfo()")
-    print("1")
-	local data = self.swisscom:getBoxInfo()
-    print("2")
-    --QuickApp:updateView("label1", "text", "WLAN: " .. tostring(data.wifi.data.Enable)) 
-    --self:updateView("label1", "text", "WLAN: test")   
-    --QuickApp:updateProperty("txtWifi", "Wifi On")
-    
-	--print(jdump(json.encode(data)))
-    --print(data.wifi.data.Enable)
-    --[[if data.wifi.data.Enable == true then self:updateView("wifi", "text", "WLAN On") 
-    else self:updateView("wifi", "text", "WLAN off")
-    end]]
+    cmd("displayInfo()")
+    local txt = ""
+    function msg(t) txt = txt .. "\n" .. t end 
+
+	local data = self.boxInfo
+    --print(jdump(json.encode(data))) 
+    msg(os.date("Last update : %x %X \n---------------------------------------------"))
+    if isEmpty(data) then txt = "Error"
+    else
+        if data.wifi.data.Enable then msg("WLAN : On") 
+        else msg("WLAN : Off")
+        end
+        if data.wifiguest.data.Enable then msg("Guest WLAN : On")
+        else msg("Guest WLAN : Off")
+        end
+        if data.centralstorage.status then msg("Central storage : On")
+        else msg("Central storage : Off")
+        end
+        if data.homeapp.status then msg("Home App : On")
+        else msg("Home App : Off")
+        end
+        if data.wwan.status.EnableTethering then msg("Internet Mobile : On")
+        else msg("Internet Mobile : Off")
+        end
+        if json.decode(data.dyndns.status).result then msg("DynDNS : On")
+        else msg("DynDNS : Off")
+        end
+        if data.vpn.data.config.Server[1].Enable then msg("VPN : On")
+        else msg("VPN : Off")
+        end
+        msg("---------------------------------------------\nAdvanced Info\n---------------------------------------------")
+        msg("External IP : " .. data.wan.data.IPAddress)
+    end
+    self:updateView("label1", "text", txt)
+    self:updateView("refresh_true", "text", "Refresh")
 end
+
+function QuickApp:setBoxInfo(t) cmd("QuickApp:setBoxInfo()") self.boxInfo = TableConcat(self.boxInfo,t) end
