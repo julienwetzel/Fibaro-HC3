@@ -19,7 +19,19 @@ function QuickApp:onInit()
     self.boxInfo = {}
 	self.config = Config:new(self)
     self.model = self.config:getModel()
+    self:control()
 	self.auth = Auth:new(self)
+end
+
+function QuickApp:control()
+    local devices = {"RTV1905VW"}
+    if not search(devices,self.model) then
+        self:error("Device model not exist, please change model in the variable.")
+        self:error("----------------------")
+        self:error("Model supported :")
+        for _,v in pairs(devices) do self:error(v) end
+        self:error("----------------------")
+    end
 end
 
 function QuickApp:actionButtonPressed(param)
@@ -35,10 +47,7 @@ end
 function QuickApp:displayInfo()
     cmd("displayInfo()")
     local txt = ""
-    function msg(t) 
-        txt = txt .. "\n" .. t 
-        self:debug(t)
-    end 
+    function msg(t) txt = txt .. "\n" .. t end 
 
 	local data = self.boxInfo
     --print(jdump(json.encode(data))) 
@@ -72,6 +81,7 @@ function QuickApp:displayInfo()
         msg("Software version : " .. data.device.status.SoftwareVersion)
     end
     self:updateView("label1", "text", txt)
+    self:debug(txt)
     self:updateView("refresh_true", "text", "Refresh")
 end
 
