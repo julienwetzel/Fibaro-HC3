@@ -16,31 +16,39 @@
 
 class 'Auth'
 
-function Auth:new(config)
-    self.config = config
+function Auth:new(app)
+    self.config = app.config
+    self.model = app.model
     self.http = HTTPClient:new({
         baseUrl = 'http://192.168.1.1'
     })
+    self.RTV1905VW = RTV1905VW:new(app)
 	self:init()  
 	return self
 end
 
-function Auth:login(nFunction)
+function Auth:login(info)
+    cmd("Auth:login()")
 	local url = '/ws'
 	local callback = function(r)
-        --print(jdump(json.encode(r))) 
+        --print(jdump(json.encode(r)))
         local data = json.decode(r.data)
         local contextID = data.data.contextID
         local cookie = r.headers["Set-Cookie"]
 		if r.status == 200 then 
             self:setCookie(cookie)
             self:setContextID(contextID)
-            nFunction()
+            if info.method == "refresh" then 
+                self[self.model]:getInfo()
+            else
+                self[self.model].command = info.command
+                self[self.model][info.method](self[self.model])
+            end
         else badNew("Auth:login", r.status)
 		end
 	end
 
-	self.http:post(url, Swisscom:getLoginBody(), callback, error, self:getHeaders({}))
+	self.http:post(url, self[self.model]["getLoginBody"](), callback, error, self:getHeaders({}))
 	return {}
 end
 
@@ -53,11 +61,6 @@ function Auth:getHeaders(headers)
 	return headers
 end
 
-function Auth:getBoxInfo()
-    
-
-end
-
 function Auth:getContextID() return self.contextID end
 function Auth:setContextID(v) self.contextID = v end
 function Auth:getCookie() return self.cookie end
@@ -68,4 +71,5 @@ function Auth:init()
     self.contextID = ""
     self.cookie = ""
     self.info = ""
+    self.model = Config:getModel()
 end
