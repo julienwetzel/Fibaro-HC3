@@ -20,7 +20,7 @@ function Auth:new(app)
     self.config = app.config
     self.model = app.model
     self.http = HTTPClient:new({
-        baseUrl = 'http://192.168.1.1'
+        baseUrl = Config:getUrl()
     })
     self.RTV1905VW = RTV1905VW:new(app)
 	self:init()  
