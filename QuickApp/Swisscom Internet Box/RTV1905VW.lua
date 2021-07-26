@@ -16,7 +16,8 @@
 
 class 'RTV1905VW'
 
-function RTV1905VW:new()
+function RTV1905VW:new(app)
+    self.quickapp = app
     return self
 end
 -----------------------------------------------------------------------------
@@ -33,41 +34,107 @@ function RTV1905VW:getLoginBody()
 	return body
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setDynDNS(boolean)
-	cmd("RTV1905VW:setDynDNS(" .. tostring(boolean) .. ")")
+function RTV1905VW:reboot()
+	cmd("RTV1905VW:reboot()")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() Swisscom:setDynDNS(boolean) end)
+		Auth:login(function() self:setDynDNS(boolean) end)
 	else
-		local url = "/sysbus/NMC/Guest:set"
-		local body = {
-                    service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
-                    method = "Configure",
-                    parameters = {
-                        enable = boolean,
-                        name = "1786"
-                    }
-                    }
+		local url = "/sysbus/NMC:reboot"
+		local body = {parameters = {reason = "Webui reboot"}}
 
 		local callback = function(r)
-			print(jdump(json.encode(r)))
-			if r.status == 200 then Swisscom:updateInfo()
-			else badNew("RTV1905VW:setDynDNS()", r.status)
+			if r.status == 200 then self:getInfo()
+			else badNew("RTV1905VW:reboot()", r.status)
 			end
+
 			Auth:resetAuth()
 		end
-        print(jdump(json.encode(self:getHeaders({}))))
-        print(jdump(json.encode(body)))
+
 		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
 		return {}
 	end
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setHomeApp(boolean)
+function RTV1905VW:setVPNServer()
+    boolean = toboolean(self.command)
+	cmd("RTV1905VW:setVPNServer(" .. tostring(boolean) .. ")")
+	if isEmpty(Auth:getContextID()) then
+		Auth:login(function() self:setDynDNS(boolean) end)
+	else
+		local url = "/sysbus/VPN:setServer"
+		local body = {
+                    parameters = {
+                        server = "default",
+                        enable = boolean}}
+
+		local callback = function(r)
+			if r.status == 200 then self:getInfo()
+			else badNew("RTV1905VW:setVPNServer()", r.status)
+			end
+			Auth:resetAuth()
+		end
+
+		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
+		return {}
+	end
+end
+-----------------------------------------------------------------------------
+function RTV1905VW:setDynDNS()
+    boolean = toboolean(self.command)
+	cmd("RTV1905VW:setDynDNS(" .. tostring(boolean) .. ")")
+	if isEmpty(Auth:getContextID()) then
+		Auth:login(function() self:setDynDNS(boolean) end)
+	else
+		local url = "/ws"
+		local body = {
+                        service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
+                        method = "Configure",
+                        parameters = {
+                            enable = boolean,
+                            name = "1786"
+                        }
+                        }
+
+		local callback = function(r)
+			if r.status == 200 then self:getInfo()
+			else badNew("RTV1905VW:setDynDNS()", r.status)
+			end
+			Auth:resetAuth()
+		end
+
+		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
+		return {}
+	end
+end
+-----------------------------------------------------------------------------
+function RTV1905VW:setInternetMobileConnect()
+    boolean = toboolean(self.command)
+	cmd("RTV1905VW:setInternetMobileConnect(" .. tostring(boolean) .. ")")
+	if isEmpty(Auth:getContextID()) then
+		Auth:login(function() self:setHomeApp(boolean) end)
+	else
+		local url = "/sysbus/NMC/WWAN:set"
+		local body = {parameters = {EnableTethering = boolean}}
+
+		local callback = function(r)
+			if r.status == 200 then self:getInfo()
+			else badNew("RTV1905VW:setInternetMobileConnect()", r.status)
+			end
+			Auth:resetAuth()
+		end
+        
+		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
+		return {}
+	end
+end
+-----------------------------------------------------------------------------
+function RTV1905VW:setHomeApp()
+    boolean = toboolean(self.command)
 	cmd("RTV1905VW:setHomeApp(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() Swisscom:setHomeApp(boolean) end)
+		Auth:login(function() self:setHomeApp(boolean) end)
 	else
-		local url = "/sysbus/NMC/Guest:set"
+		local url = "/ws"
 		local body = {
                         service = "com.vestiacom.rnas/com/vestiacom/rnas.com.vestiacom.rnas",
                         method = "SetEnabled",
@@ -77,51 +144,50 @@ function RTV1905VW:setHomeApp(boolean)
                         }
 
 		local callback = function(r)
-			print(jdump(json.encode(r)))
-			if r.status == 200 then Swisscom:updateInfo()
+			if r.status == 200 then self:getInfo()
 			else badNew("RTV1905VW:setHomeApp()", r.status)
 			end
 			Auth:resetAuth()
 		end
-        print(jdump(json.encode(self:getHeaders({}))))
-        print(jdump(json.encode(body)))
+
 		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
 		return {}
 	end
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setCentralStorage(boolean)
+function RTV1905VW:setCentralStorage()
+    boolean = toboolean(self.command)
 	cmd("RTV1905VW:setCentralStorage(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() Swisscom:setCentralStorage(boolean) end)
+		Auth:login(function() self:setHomeApp(boolean) end)
 	else
-		local url = "/sysbus/NMC/Guest:set"
+		local url = "/ws"
 		local body = {
-			service = "com.swisscom.stargate/ws/centralstorage.com.swisscom.stargate.centralstorage",
-			method = "SetState",
-			parameters = {
-				state = boolean
-			}
-		}
+                        service = "com.swisscom.stargate/ws/centralstorage.com.swisscom.stargate.centralstorage",
+                        method = "SetState",
+                        parameters = {
+                            state = boolean
+                        }}
 
 		local callback = function(r)
-			print(jdump(json.encode(r)))
-			if r.status == 200 then Swisscom:updateInfo()
+			--print(jdump(json.encode(r)))
+			if r.status == 200 then self:getInfo()
 			else badNew("RTV1905VW:setCentralStorage()", r.status)
 			end
 			Auth:resetAuth()
 		end
-        print(jdump(json.encode(self:getHeaders({}))))
-        print(jdump(json.encode(body)))
+        --print(jdump(json.encode(self:getHeaders({}))))
+        --print(jdump(json.encode(body)))
 		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
 		return {}
 	end
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setGuestWifi(boolean)
+function RTV1905VW:setGuestWifi()
+    boolean = toboolean(self.command)
 	cmd("RTV1905VW:setGuestWifi(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() Swisscom:setGuestWifi(boolean) end)
+		Auth:login(function() self:setGuestWifi(boolean) end)
 	else
 		local url = "/sysbus/NMC/Guest:set"
 		local body = {
@@ -131,8 +197,7 @@ function RTV1905VW:setGuestWifi(boolean)
 		}
 
 		local callback = function(r)
-			--print(jdump(json.encode(r)))
-			if r.status == 200 then Swisscom:updateInfo()
+			if r.status == 200 then self:getInfo()
 			else badNew("RTV1905VW:setGuestWifi()", r.status)
 			end
 			Auth:resetAuth()
@@ -143,12 +208,12 @@ function RTV1905VW:setGuestWifi(boolean)
 	end
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setWifi(boolean)
+function RTV1905VW:setWifi()
+    boolean = toboolean(self.command)
 	cmd("RTV1905VW:setWifi(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() Swisscom:setWifi(boolean) end)
+		Auth:login(function() self:setWifi(boolean) end)
 	else
-		--print(Auth:getContextID()) 
 		local url = "/sysbus/NMC/Wifi:set"
 		local body = {
 			parameters = {
@@ -159,8 +224,7 @@ function RTV1905VW:setWifi(boolean)
 		}
 
 		local callback = function(r)
-			--print(jdump(json.encode(r)))
-			if r.status == 200 then Swisscom:updateInfo()
+			if r.status == 200 then self:getInfo()
 			else badNew("RTV1905VW:setWifi()", r.status)
 			end
 			Auth:resetAuth()
@@ -173,24 +237,39 @@ end
 -----------------------------------------------------------------------------
 function RTV1905VW:getHeaders(headers)
 	cmd("RTV1905VW:getHeaders()")
-	local c = Auth:getContextID()
-	if isEmpty(c) then badNew("RTV1905VW:getHeaders()", 800) end
+	local contextID = Auth:getContextID()
+    local cookies = Auth:getCookie()
+
+    local _, _, deviceID, sessionID, reste = string.find(cookies, "(%w+)(.-);%s(.+)")
+
+	if isEmpty(contextID) then badNew("RTV1905VW:getHeaders()", 800) end
 	headers = {
-		["Content-Type"] = "application/json",
-		["Accept"] = "application/json",
-		["Cookie"] = Auth:getCookie(),
-		["Authorization"] = "X-Sah " .. Auth:getContextID()
+		["Content-Type"] = "application/x-sah-ws-4-call+json",
+		["Accept"] = "*/*",
+        --["Cookie"] = Auth:getCookie(), 
+		["Cookie"] = deviceID .. "accept-language=fr-CH,fr; test=test; " .. deviceID .. sessionID .. "; swc/deviceID=" .. deviceID .. "; " .. deviceID .. "/context=" .. contextID,
+		["Authorization"] = "X-Sah " .. Auth:getContextID(),
+        ["X-Context"] = contextID,
+        ["X-Requested-With"] = "XMLHttpRequest",
+        ["User-Agent"] = "Fibaro/HC3",
+        ["Origin"] = "http://192.168.1.1",
+        ["Referer"] = "http://192.168.1.1",
+        ["Host"] = "192.168.1.1",
+        ["Connection"] = "keep-alive",
+        ["Accept-Encoding"] = "gzip, deflate",
+        ["Accept-Language"] = "fr-CH,fr;q=0.9"
 	}
+    
+    local headersContent = json.encode(headers)  
+    headers["Content-Length"] = tostring(#headersContent)
 	return headers
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:getInfo()
 	cmd("RTV1905VW:getInfo()")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() RTV1905VW:getInfo() end)
+		Auth:login(function() self:getInfo() end)
 	else
-		--body = {parameters = "null"}
-		--print(Auth:getContextID())  
 		local urls = {}
 		urls = {
 			[1] = {title = "time", url = "/sysbus/Time:getTime"},
@@ -199,35 +278,52 @@ function RTV1905VW:getInfo()
 			[4] = {title = "controller", url = "/sysbus/APController:get"},
 			[5] = {title = "wifi", url = "/sysbus/NMC/Wifi:get"},
 			[6] = {title = "device", url = "/sysbus/DeviceInfo:get"},
-			[7] = {title = "wifiguest", url = "/sysbus/NMC/Guest:get"}
+			[7] = {title = "wifiguest", url = "/sysbus/NMC/Guest:get"},
+            [8] = {title = "wwan", url = "/sysbus/NMC/WWAN:get"},
+            [9] = {title = "vpn", url = "/sysbus/VPN:getServersConfig"},
+            [10] = {title = "homeapp", url = "/ws", body = {
+                        service = "com.vestiacom.rnas/com/vestiacom/rnas.com.vestiacom.rnas",
+                        method = "GetEnabled",
+                        parameters = { }}},
+            [11] = {title = "dyndns", url = "/ws", body = {
+                        service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
+                        method = "IsEnabled",
+                        parameters = { }}},
+            [12] = {title = "centralstorage", url = "/ws", body = {
+                        service = "com.swisscom.stargate/ws/centralstorage.com.swisscom.stargate.centralstorage",
+                        method = "GetState",
+                        parameters = { }}}
 		}
 		--Lien traduction fr : http://192.168.1.1/static/translations/stargatev2/fr.json
 		--lien traduction de : http://192.168.1.1/static/translations/stargatev2/de.json
-		--lien traduction it : http://192.168.1.1/static/translations/stargatev2/it.json
+		--lien traduction it : http://192.168.1.1/static/translations/stargatev2/it.json 
 
 		local data = {}
 		local t = {}
 		local num = 0
 		for i=1, #urls do
 			local callback = function(r)
-				data = json.decode(r.data).result
-				--print(jdump(json.encode(r))) 
+                --print(jdump(json.encode(r)))
+				data = json.decode(r.data)
+                --print(data)
 				if r.status == 200 then
 					t = {}
 					if isEmpty(data) then t[urls[i].title] = {}
 					else t[urls[i].title] = data
 					end
 
-					Swisscom:setBoxInfo(t)
+					self.quickapp:setBoxInfo(t)
 					num = num + 1
 
-					if num == #urls then displayInfo() end
-				else badNew("RTV1905VW:getInfo()", r.status)
+					if num == #urls then self.quickapp:displayInfo() end
+				else badNew("RTV1905VW:getInfo() title: " .. urls[i].title, r.status)
 				end
 				Auth:resetAuth()
 			end
 
 			url = urls[i].url
+            body = urls[i].body
+            --print(jdump(json.encode(self:getHeaders({}))))
 			HTTPClient:post(url, body, callback, error, self:getHeaders({})) 
 		end
 		return {}
