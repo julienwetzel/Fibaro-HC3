@@ -20,8 +20,6 @@ function QuickApp:onInit()
 	self.config = Config:new(self)
     self.model = self.config:getModel()
 	self.auth = Auth:new(self)
-    --self.swisscom = Swisscom:new(self)
-	--self.RTV1905VW = RTV1905VW:new(self)
 end
 
 function QuickApp:actionButtonPressed(param)
@@ -37,7 +35,10 @@ end
 function QuickApp:displayInfo()
     cmd("displayInfo()")
     local txt = ""
-    function msg(t) txt = txt .. "\n" .. t end 
+    function msg(t) 
+        txt = txt .. "\n" .. t 
+        self:debug(t)
+    end 
 
 	local data = self.boxInfo
     --print(jdump(json.encode(data))) 
@@ -66,10 +67,12 @@ function QuickApp:displayInfo()
         else msg("VPN : Off")
         end
         msg("---------------------------------------------\nAdvanced Info\n---------------------------------------------")
+        msg("Internet Connection : " .. data.controller.status.Connection)
         msg("External IP : " .. data.wan.data.IPAddress)
+        msg("Software version : " .. data.device.status.SoftwareVersion)
     end
     self:updateView("label1", "text", txt)
     self:updateView("refresh_true", "text", "Refresh")
 end
 
-function QuickApp:setBoxInfo(t) cmd("QuickApp:setBoxInfo()") self.boxInfo = TableConcat(self.boxInfo,t) end
+function QuickApp:setBoxInfo(t) self.boxInfo = TableConcat(self.boxInfo,t) end
