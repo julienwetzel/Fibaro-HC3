@@ -79,24 +79,23 @@ function RTV1905VW:setVPNServer()
 	end
 end
 -----------------------------------------------------------------------------
-function RTV1905VW:setDynDNS()
-    boolean = toboolean(self.command)
-	cmd("RTV1905VW:setDynDNS(" .. tostring(boolean) .. ")")
+function RTV1905VW:getNameDynDNS(start)
+	cmd("RTV1905VW:getNameDynDNS()")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setDynDNS(boolean) end)
+        local boolean = toboolean(self.command)
+		Auth:login({method = "setDynDNS", command = boolean})
 	else
 		local url = "/ws"
 		local body = {
-                        service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
-                        method = "Configure",
-                        parameters = {enable = boolean}
-                        }
+                    service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
+                    method = "GetName",
+                    parameters = { }
+                    }
 
 		local callback = function(r)
-			if r.status == 200 then self:getInfo()
-			else badNew("RTV1905VW:setDynDNS()", r.status)
-			end
-			Auth:resetAuth()
+            --print(jdump(json.encode(r)))
+			if r.status ~= 200 then badNew("RTV1905VW:getNameDynDNS()", r.status) end
+			start(json.decode(json.decode(r.data).status).result)
 		end
 
 		HTTPClient:post(url, body, callback, error, self:getHeaders({}))  
@@ -104,11 +103,47 @@ function RTV1905VW:setDynDNS()
 	end
 end
 -----------------------------------------------------------------------------
+function RTV1905VW:setDynDNS() 
+    local start = function(n)
+        local boolean = toboolean(self.command)
+        cmd("RTV1905VW:setDynDNS(" .. tostring(boolean) .. ")")
+        if isEmpty(Auth:getContextID()) then
+            Auth:login({method = "setDynDNS", command = boolean})
+        else
+            local url = "/ws"
+            local body = {
+            service = "com.swisscom.apsm/dyndns.com.swisscom.apsm.dyndns",
+            method = "Configure",
+            parameters = {
+                enable = boolean,
+                name = n
+            }
+            }
+
+            local callback = function(r)
+                --print(jdump(json.encode(r)))
+                if r.status == 200 then
+                    self:getInfo()
+                else
+                    badNew("RTV1905VW:setDynDNS()", r.status)
+                end
+                Auth:resetAuth()
+            end
+
+            HTTPClient:post(url, body, callback, error, self:getHeaders({}))
+            return {}
+        end
+    end
+    self:getNameDynDNS(start)
+    return {}
+end
+
+-----------------------------------------------------------------------------
 function RTV1905VW:setInternetMobileConnect()
-    boolean = toboolean(self.command)
+    local boolean = toboolean(self.command)
 	cmd("RTV1905VW:setInternetMobileConnect(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setHomeApp(boolean) end)
+		Auth:login({method = "getContextID", command = boolean})
 	else
 		local url = "/sysbus/NMC/WWAN:set"
 		local body = {parameters = {EnableTethering = boolean}}
@@ -126,10 +161,10 @@ function RTV1905VW:setInternetMobileConnect()
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:setHomeApp()
-    boolean = toboolean(self.command)
+    local boolean = toboolean(self.command)
 	cmd("RTV1905VW:setHomeApp(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setHomeApp(boolean) end)
+		Auth:login({method = "setHomeApp", command = boolean})
 	else
 		local url = "/ws"
 		local body = {
@@ -153,10 +188,10 @@ function RTV1905VW:setHomeApp()
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:setCentralStorage()
-    boolean = toboolean(self.command)
+    local boolean = toboolean(self.command)
 	cmd("RTV1905VW:setCentralStorage(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setHomeApp(boolean) end)
+		Auth:login({method = "setCentralStorage", command = boolean})
 	else
 		local url = "/ws"
 		local body = {
@@ -181,10 +216,10 @@ function RTV1905VW:setCentralStorage()
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:setGuestWifi()
-    boolean = toboolean(self.command)
+    local boolean = toboolean(self.command)
 	cmd("RTV1905VW:setGuestWifi(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setGuestWifi(boolean) end)
+		Auth:login({method = "setGuestWifi", command = boolean})
 	else
 		local url = "/sysbus/NMC/Guest:set"
 		local body = {
@@ -206,10 +241,10 @@ function RTV1905VW:setGuestWifi()
 end
 -----------------------------------------------------------------------------
 function RTV1905VW:setWifi()
-    boolean = toboolean(self.command)
+    local boolean = toboolean(self.command)
 	cmd("RTV1905VW:setWifi(" .. tostring(boolean) .. ")")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:setWifi(boolean) end)
+		Auth:login({method = "setWifi", command = boolean})
 	else
 		local url = "/sysbus/NMC/Wifi:set"
 		local body = {
@@ -265,7 +300,7 @@ end
 function RTV1905VW:getInfo()
 	cmd("RTV1905VW:getInfo()")
 	if isEmpty(Auth:getContextID()) then
-		Auth:login(function() self:getInfo() end)
+		Auth:login({method = "getInfo", command = "true"})
 	else
 		local urls = {}
 		urls = {
